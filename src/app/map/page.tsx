@@ -30,19 +30,15 @@ const Map: React.FC = () => {
     },
   });
 
-  let bounds: google.maps.LatLngBounds;
-  let currentInfoWindow: google.maps.InfoWindow;
-  let service: google.maps.places.PlacesService;
-  let infoPane: HTMLElement | null;
-
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY ?? "",
+    libraries: ["places"],
   });
 
   const onLoad = useCallback(() => {
     // Initialize variables
-    bounds = new google.maps.LatLngBounds();
+    let bounds = new google.maps.LatLngBounds();
     /* TODO: Step 4A3: Add a generic sidebar */
 
     // Try HTML5 geolocation
@@ -95,6 +91,26 @@ const Map: React.FC = () => {
   }
   /* END TODO: Step 2, Geolocate your user */
   /* TODO: Step 3B1, Call the Places Nearby Search */
+  // Perform a Places Nearby Search Request
+  function getNearbyPlaces(position) {
+    let request = {
+      location: position,
+      rankBy: google.maps.places.RankBy.DISTANCE,
+      keyword: "sushi",
+    };
+
+    service = new google.maps.places.PlacesService(map);
+    service.nearbySearch(request, nearbyCallback);
+  }
+
+  // Handle the results (up to 20) of the Nearby Search
+  function nearbyCallback(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      createMarkers(results);
+    }
+  }
+
+  /* TODO: Step 3C, Generate markers for search results */
 
   return isLoaded ? (
     <GoogleMap
